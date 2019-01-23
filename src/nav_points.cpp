@@ -25,7 +25,7 @@ int main(int argc, char** argv)
   ROS_INFO("get param %f", x_coords[0]);
   if(x_coords.size() != num_points || y_coords.size() != num_points || theta_coords.size() != num_points){
     ROS_ERROR("Wrong Point Number!");
-    return;
+    return 0;
   }
   
   vector<geometry_msgs::Pose2D> goal_poses;
@@ -46,7 +46,6 @@ int main(int argc, char** argv)
   MoveBaseGoal curr_goal;
   curr_goal.target_pose.header.frame_id = "base_link";
 
-  vector<geometry_msgs::Pose2D> goal_poses;
   geometry_msgs::Pose2D curr_pose;
   size_t point_states = 0;
 
