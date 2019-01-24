@@ -68,11 +68,22 @@ int main(int argc, char** argv)
 
     ac.sendGoal(curr_goal);
     ac.waitForServer();
-
+    
+    ros::Rate r(100);
+    while(ac.getState() == actionlib::SimpleClientGoalState::PENDING || ac.getState() == actionlib::SimpleClientGoalState::ACTIVE){
+      ROS_INFO("Approaching");
+      r.sleep();
+    }
     if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
       ++point_states;
+      ROS_INFO("Next Point");
     } else {
-      ROS_WARN("Fail to go to target point");
+      if(ac.getState() == actionlib::SimpleClientGoalState::PENDING)
+        ROS_WARN("Pending");
+      else if(ac.getState() == actionlib::SimpleClientGoalState::PREEMPTED)
+        ROS_WARN("Preempted");
+      else if(ac.getState() == actionlib::SimpleClientGoalState::ACTIVE)
+        ROS_WARN("Active");
     }
     if(!ros::ok()) break;
   }
