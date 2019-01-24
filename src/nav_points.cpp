@@ -23,7 +23,6 @@ int main(int argc, char** argv)
   nh.getParam("points_y", y_coords);
   nh.getParam("points_qz", qz_coords);
   nh.getParam("points_qw", qw_coords);
-  ROS_INFO("get param %f", x_coords[0]);
   if(x_coords.size() != num_points || y_coords.size() != num_points || qz_coords.size() != num_points){
     ROS_ERROR("Wrong Point Number!");
     return 0;
@@ -54,39 +53,56 @@ int main(int argc, char** argv)
   geometry_msgs::Pose curr_pose;
   size_t point_states = 0;
 
+  double duration_time;
+  bool finish_in_time;
   tf::Quaternion q;
   while(point_states < num_points){
     curr_pose = goal_poses[point_states];
     curr_goal.target_pose.header.stamp = ros::Time::now();
     curr_goal.target_pose.pose.position.x = curr_pose.position.x;
     curr_goal.target_pose.pose.position.y = curr_pose.position.y;
-    curr_goal.target_pose.pose.position.y = curr_pose.position.z;
+    curr_goal.target_pose.pose.position.z = curr_pose.position.z;
     curr_goal.target_pose.pose.orientation.w = curr_pose.orientation.w;
     curr_goal.target_pose.pose.orientation.x = curr_pose.orientation.x;
     curr_goal.target_pose.pose.orientation.y = curr_pose.orientation.y;
     curr_goal.target_pose.pose.orientation.z = curr_pose.orientation.z;
 
     ac.sendGoal(curr_goal);
-    ac.waitForServer();
+    ///! seems not useful
+    // ac.waitForServer();
+    nh.getParam("point_duration", duration_time);
+
+    finish_in_time = ac.waitForResult(ros::Duration(duration_time));
     
-    ros::Rate r(100);
-    while(ac.getState() == actionlib::SimpleClientGoalState::PENDING || ac.getState() == actionlib::SimpleClientGoalState::ACTIVE){
-      ROS_INFO("Approaching");
-      r.sleep();
-    }
-    if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
-      ++point_states;
-      ROS_INFO("Next Point");
+    // ros::Rate r(100);
+    // while(ac.getState() == actionlib::SimpleClientGoalState::PENDING || ac.getState() == actionlib::SimpleClientGoalState::ACTIVE){
+    //   ROS_INFO("Approaching x: %f, y: %f, w: %f, z: %f",
+    //           curr_goal.target_pose.pose.position.x,
+    //           curr_goal.target_pose.pose.position.y,
+    //           curr_goal.target_pose.pose.orientation.w,
+    //           curr_goal.target_pose.pose.orientation.z);
+    //   r.sleep();
+    // }
+    // if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
+    //   ++point_states;
+    //   ROS_INFO("Next Point");
+    // } else {
+    //   if(ac.getState() == actionlib::SimpleClientGoalState::PENDING)
+    //     ROS_WARN("Pending");
+    //   else if(ac.getState() == actionlib::SimpleClientGoalState::PREEMPTED)
+    //     ROS_WARN("Preempted");
+    //   else if(ac.getState() == actionlib::SimpleClientGoalState::ACTIVE)
+    //     ROS_WARN("Active");
+    // }
+
+    if(!finish_in_time){
+      ac.cancelGoal();
+      ROS_WARN("Can not reach goal in time, move to next goal");
     } else {
-      if(ac.getState() == actionlib::SimpleClientGoalState::PENDING)
-        ROS_WARN("Pending");
-      else if(ac.getState() == actionlib::SimpleClientGoalState::PREEMPTED)
-        ROS_WARN("Preempted");
-      else if(ac.getState() == actionlib::SimpleClientGoalState::ACTIVE)
-        ROS_WARN("Active");
+      ROS_INFO("Reach goal: move to next");
     }
+    ++point_states;
     if(!ros::ok()) break;
   }
   return 0;
-  
 }
