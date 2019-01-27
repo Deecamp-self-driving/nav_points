@@ -117,6 +117,10 @@ int main(int argc, char** argv)
                       curr_goal.target_pose.pose.position.x, curr_goal.target_pose.pose.position.y) < goal_tolerance){
         ac.cancelGoal();
         ++point_states;
+        if(point_states == num_points - 1){
+          nh.setParam("/move_base/GlobalPlanner/orentation_mode", 2);
+          nh.setParam("/move_base/TebLocalPlannerROS/global_plan_overwrite_orientation", false);
+        } 
         ROS_WARN("Can not reach goal in time, move to next goal");
       } else {
         ROS_WARN("Can not reach goal in time, try again");
@@ -125,8 +129,16 @@ int main(int argc, char** argv)
     } else {
       ROS_INFO("Reach goal: move to next");
       ++point_states;
+      if(point_states == num_points - 1)
+      {
+        nh.setParam("/move_base/GlobalPlanner/orentation_mode", 2);
+        nh.setParam("/move_base/TebLocalPlannerROS/global_plan_overwrite_orientation", false);
+      }
     }
     if(!nh.ok()) break;
   }
+  nh.setParam("/move_base/GlobalPlanner/orientation_mode", 0);
+  nh.setParam("/move_base/TebLocalPlannerROS/global_plan_overwrite_orientation", true);
+
   return 0;
 }

@@ -1,8 +1,8 @@
-num_points: 2
-points_x:  [-0.352,  0.080]
-points_y:  [-0.242, -1.692]
-points_qz: [ 0.998, -0.748]
-points_qw: [-0.069,  0.664]
+num_points: 3
+points_x:  [ 1.049, -0.304,  0.087]
+points_y:  [-1.585, -0.243, -1.731]
+points_qz: [ 0.995,  0.999,  0.757]
+points_qw: [-0.104, -0.044,  0.653]
 
 point_duration: 10
 goal_tolerance: 0.2
